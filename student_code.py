@@ -142,6 +142,42 @@ class KnowledgeBase(object):
         """
         ####################################################
         # Student code goes here
+        if isinstance(fact_or_rule, Fact):
+            fact = self._get_fact(fact_or_rule)
+            if not fact: return("Fact is not in the KB")
+            return(self.explain_fact(fact, '')).rstrip('\n')
+        elif isinstance(fact_or_rule, Rule):
+            rule = self._get_rule(fact_or_rule)
+            if not rule: return("Rule is not in the KB")
+            return(self.explain_rule(rule, '')).rstrip('\n')
+        else:
+            return False
+
+    def explain_fact(self, fact, indent):
+        output = indent + 'fact: ' + fact.statement.__str__()
+        if fact.asserted: output += ' ASSERTED'
+        output += '\n'
+        for pair in fact.supported_by:
+            output += indent + '  SUPPORTED BY\n' 
+            output += self.explain_fact(pair[0], indent+'    ')
+            output += self.explain_rule(pair[1], indent+'    ')
+        return output
+
+    def explain_rule(self, rule, indent):
+        output = indent + 'rule: ('
+        for n in range(len(rule.lhs)):
+            output += rule.lhs[n].__str__()
+            if n != len(rule.lhs)-1:
+                output += ', '
+        output += ') -> ' + rule.rhs.__str__()
+        if rule.asserted: output += ' ASSERTED'
+        output += '\n'
+        for pair in rule.supported_by:
+            output += indent + '  SUPPORTED BY\n' 
+            output += self.explain_fact(pair[0], indent+'    ')
+            output += self.explain_rule(pair[1], indent+'    ')
+        return output
+
 
 
 class InferenceEngine(object):
